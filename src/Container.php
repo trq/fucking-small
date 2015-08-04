@@ -27,12 +27,12 @@ class Container implements ContainerInterface
     /**
      * Attach a service to the container
      *
-     * @param          $name
+     * @param $name
      * @param callable $callback
      *
      * @return $this
      */
-    public function attach($name, callable $callback)
+    public function attach(string $name, callable $callback): ContainerInterface
     {
         $this->services[$name] = $callback;
 
@@ -40,13 +40,13 @@ class Container implements ContainerInterface
     }
 
     /**
-     * @param string   $alias
-     * @param string   $concrete
+     * @param $alias
+     * @param $concrete
      * @param callable $callback
      *
      * @return $this
      */
-    public function alias($alias, $concrete, callable $callback = null)
+    public function alias(string $alias, string $concrete, callable $callback = null): ContainerInterface
     {
         $this->aliases[$alias] = $concrete;
 
@@ -58,12 +58,12 @@ class Container implements ContainerInterface
     }
 
     /**
-     * @param string $index
+     * @param $index
      * @param mixed $value
      *
      * @return $this
      */
-    public function setParameter($index, $value)
+    public function setParameter(string $index, $value): ContainerInterface
     {
         $this->parameters[$index] = $value;
 
@@ -75,9 +75,9 @@ class Container implements ContainerInterface
      *
      * @param $name
      *
-     * @return object|null
+     * @return object
      */
-    public function resolve($name)
+    public function resolve(string $name): object
     {
         if (array_key_exists($name, $this->services)) {
             return call_user_func($this->services[$name]);
@@ -103,7 +103,7 @@ class Container implements ContainerInterface
      *
      * @return array
      */
-    private function getDependencies($params)
+    private function getDependencies(array $params): array
     {
         $args = [];
         foreach ($params as $param) {
@@ -124,7 +124,7 @@ class Container implements ContainerInterface
      *
      * @return object
      */
-    private function autoResolve($name)
+    private function autoResolve(string $name): object
     {
         $object = null;
         $reflection = new \ReflectionClass($name);
@@ -147,7 +147,7 @@ class Container implements ContainerInterface
      *
      * @return object
      */
-    protected function autoResolveAlias($name)
+    protected function autoResolveAlias(string $name): object
     {
         if (array_key_exists($name, $this->aliases)) {
             return $this->autoResolve($this->aliases[$name]);

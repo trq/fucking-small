@@ -10,7 +10,7 @@ class Dispatcher implements DispatcherInterface
      *
      * @return string|null
      */
-    public function dispatch(ContainerInterface $container, array $payload)
+    public function dispatch(ContainerInterface $container, array $payload): ResponseInterface
     {
         $controllerClass = $payload['_controller'];
         $method          = $payload['_method'];

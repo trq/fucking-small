@@ -15,10 +15,10 @@ class AbstractController
     private $response;
 
     /**
-     * @param string            $_appPath
+     * @param $_appPath
      * @param ResponseInterface $response
      */
-    public function __construct($_appPath, ResponseInterface $response)
+    public function __construct(string $_appPath, ResponseInterface $response)
     {
         $this->appPath  = $_appPath;
         $this->response = $response;
@@ -30,7 +30,7 @@ class AbstractController
      *
      * @return Response
      */
-    protected function render($name, array $vars = [])
+    protected function render(string $name, array $vars = []): ResponseInterface
     {
         $path = $this->appPath . '/view/' . $name . '.php';
 

@@ -2,6 +2,7 @@
 
 namespace FuckingSmallTest;
 
+use FuckingSmall\RequestInterface;
 use FuckingSmall\Router;
 use FuckingSmall\Request;
 
@@ -10,6 +11,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
     public function testSimpleRouteMatching()
     {
         $request = $this->prophesize(Request::class);
+        $request->willImplement(RequestInterface::class);
         $request->getUri()
             ->shouldBeCalledTimes(3)
             ->willReturn('/bob');

@@ -5,14 +5,14 @@ namespace FuckingSmall;
 interface RouterInterface
 {
     /**
-     * @param string $name
-     * @param string $rule
-     * @param string $action
+     * @param $name
+     * @param $rule
+     * @param $action
      * @param array  $options
      *
      * @return $this
      */
-    public function attach($name, $rule, $action, array $options = []);
+    public function attach(string $name, string $rule, string $action, array $options = []): RouterInterface;
 
     /**
      * Attempt to resolve a route from a URL

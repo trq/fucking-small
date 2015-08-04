@@ -1,5 +1,5 @@
 <?php
 
 $router
-    ->attach('/', 'App\Controller::index')
+    ->attach('index', '/', 'App\Controller::index')
 ;

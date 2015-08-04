@@ -1,33 +1,47 @@
 <?php
-
+/**
+ * Created by PhpStorm.
+ * User: trq
+ * Date: 4/08/2015
+ * Time: 10:22 PM
+ */
 namespace FuckingSmall;
 
+
+/**
+ * Class Request
+ * @package FuckingSmall
+ */
 interface RequestInterface
 {
     /**
      * @return static
      */
-    public static function createFromGlobals();
+    public static function createFromGlobals(): RequestInterface;
 
     /**
      * @return string
      */
-    public function getUri();
+    public function getUri(): string;
 
     /**
-     * @param string $uri
+     * @param $uri
+     *
+     * @return $this
      */
-    public function setUri($uri);
+    public function setUri(string $uri): RequestInterface;
 
     /**
      * @return string
      */
-    public function getMethod();
+    public function getMethod(): string;
 
     /**
-     * @param string $method
+     * @param $method
+     *
+     * @return $this
      */
-    public function setMethod($method);
+    public function setMethod(string $method): RequestInterface;
 
     /**
      * @param      $key
@@ -35,15 +49,5 @@ interface RequestInterface
      *
      * @return mixed
      */
-    public function getParameter($key, $default = null);
-
-    /**
-     * @return array
-     */
-    public function getParameters();
-
-    /**
-     * @param array $parameters
-     */
-    public function setParameters($parameters);
+    public function getParameter(string $key, $default = null);
 }

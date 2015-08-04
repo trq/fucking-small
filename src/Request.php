@@ -30,10 +30,10 @@ class Request implements RequestInterface
 
     /**
      * @param        $uri
-     * @param string $method
+     * @param        $method
      * @param array  $parameters
      */
-    public function __construct($uri, $method = 'GET', array $parameters = [])
+    public function __construct(string $uri, string $method = 'GET', array $parameters = [])
     {
         $this->uri        = $uri;
         $this->method     = $method;
@@ -43,7 +43,7 @@ class Request implements RequestInterface
     /**
      * @return static
      */
-    public static function createFromGlobals()
+    public static function createFromGlobals(): RequestInterface
     {
         return new static(
             $_SERVER['REQUEST_URI'],
@@ -55,33 +55,41 @@ class Request implements RequestInterface
     /**
      * @return string
      */
-    public function getUri()
+    public function getUri(): string
     {
         return $this->uri;
     }
 
     /**
-     * @param string $uri
+     * @param $uri
+     *
+     * @return $this
      */
-    public function setUri($uri)
+    public function setUri(string $uri): RequestInterface
     {
         $this->uri = $uri;
+
+        return $this;
     }
 
     /**
      * @return string
      */
-    public function getMethod()
+    public function getMethod(): string
     {
         return $this->method;
     }
 
     /**
-     * @param string $method
+     * @param $method
+     *
+     * @return $this
      */
-    public function setMethod($method)
+    public function setMethod(string $method): RequestInterface
     {
         $this->method = $method;
+
+        return $this;
     }
 
     /**
@@ -90,28 +98,12 @@ class Request implements RequestInterface
      *
      * @return mixed
      */
-    public function getParameter($key, $default = null)
+    public function getParameter(string $key, $default = null)
     {
         if (array_key_exists($key, $this->parameters)) {
             return $this->parameters[$key];
         }
 
         return $default;
-    }
-
-    /**
-     * @return array
-     */
-    public function getParameters()
-    {
-        return $this->parameters;
-    }
-
-    /**
-     * @param array $parameters
-     */
-    public function setParameters($parameters)
-    {
-        $this->parameters = $parameters;
     }
 }

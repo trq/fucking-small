@@ -34,14 +34,14 @@ class Router implements RouterInterface
     }
 
     /**
-     * @param string $name
-     * @param string $rule
-     * @param string $action
+     * @param $name
+     * @param $rule
+     * @param $action
      * @param array  $options
      *
      * @return $this
      */
-    public function attach($name, $rule, $action, array $options = [])
+    public function attach(string $name, string $rule, string $action, array $options = []): RouterInterface
     {
         $this->routes[$name] = [
             'rule'    => $rule,
@@ -87,12 +87,12 @@ class Router implements RouterInterface
     /**
      * Build a regular expression from the given rule.
      *
-     * @param string $rule
+     * @param $rule
      * @param array $options
      *
      * @return string
      */
-    private function compileRegex($rule, array $options = [])
+    private function compileRegex(string $rule, array $options = []): string
     {
         $regex = '^' . preg_replace_callback(
             '@\{[\w]+\}@',
@@ -123,12 +123,15 @@ class Router implements RouterInterface
     /**
      * Find tokens within given rule.
      *
-     * @param string $rule
+     * @param $rule
+     *
+     * @return array
      */
-    private function compileTokens($rule)
+    private function compileTokens(string $rule): array
     {
         $tokens = [];
         preg_match_all('@\{([\w]+)\}@', $rule, $tokens, PREG_PATTERN_ORDER);
+
         return $tokens[0];
     }
 
@@ -136,14 +139,14 @@ class Router implements RouterInterface
      * Match a regular expression against a given *haystack* string. Returning the resulting matches indexed
      * by the values of the given tokens.
      *
-     * @param string $regex
+     * @param $regex
      * @param array  $tokens
-     * @param string $haystack
+     * @param $haystack
      * @param array  $options
      *
      * @return array|false
      */
-    private function compileResults($regex, $tokens, $haystack, array $options = [])
+    private function compileResults(string $regex, array $tokens, string $haystack, array $options = [])
     {
         $results = [];
 

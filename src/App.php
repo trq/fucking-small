@@ -10,10 +10,10 @@ class App
     private $container;
 
     /**
-     * @param string             $appPath
+     * @param $appPath
      * @param ContainerInterface $container
      */
-    public function __construct($appPath, ContainerInterface $container = null) {
+    public function __construct(string $appPath, ContainerInterface $container = null) {
         if (null === $container) {
             $container = new Container();
         }
@@ -26,7 +26,7 @@ class App
     /**
      *
      */
-    public function run()
+    public function run(): App
     {
         $router     = $this->container->resolve(RouterInterface::class);
         $request    = $this->container->resolve(RequestInterface::class);
@@ -42,12 +42,14 @@ class App
 
             $response->send();
         }
+
+        return $this;
     }
 
     /**
      * @return ContainerInterface
      */
-    public function getContainer()
+    public function getContainer(): ContainerInterface
     {
         return $this->container;
     }
@@ -55,9 +57,11 @@ class App
     /**
      * Bootstrap the framework's Request, Router and Dispatch dependencies
      *
-     * @param string appPath
+     * @param $appPath
+     *
+     * @return $this
      */
-    protected function bootstrap($appPath)
+    protected function bootstrap(string $appPath): App
     {
         $this->container
             /**
@@ -122,5 +126,7 @@ class App
             require_once $appPath . '/routing.php';
         }
         unset($router);
+
+        return $this;
     }
 }

@@ -12,15 +12,15 @@ class Response implements ResponseInterface
     /**
      * @return string
      */
-    public function getContent()
+    public function getContent(): string
     {
         return $this->content;
     }
 
     /**
-     * @param string $content
+     * @param $content
      */
-    public function setContent($content)
+    public function setContent(string $content): ResponseInterface
     {
         $this->content = $content;
     }

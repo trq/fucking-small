@@ -10,5 +10,5 @@ interface DispatcherInterface
      *
      * @return string
      */
-    public function dispatch(ContainerInterface $container, array $payload);
+    public function dispatch(ContainerInterface $container, array $payload): ResponseInterface;
 }

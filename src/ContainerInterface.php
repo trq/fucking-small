@@ -12,7 +12,7 @@ interface ContainerInterface
      *
      * @return $this
      */
-    public function attach($name, callable $callback);
+    public function attach(string $name, callable $callback): ContainerInterface;
 
     /**
      * Attempt to resolve a service, firstly from the container itself, then using reflection
@@ -21,5 +21,5 @@ interface ContainerInterface
      *
      * @return object|null
      */
-    public function resolve($name);
+    public function resolve(string $name): object;
 }
