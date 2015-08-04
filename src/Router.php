@@ -84,6 +84,35 @@ class Router implements RouterInterface
         return false;
     }
 
+    public function gentUrl($name, array $params = [])
+    {
+        if (array_key_exists($name, $this->routes)) {
+            $route   = $this->routes[$name];
+            $options = $route['options'];
+            $tokens  = $this->compileTokens($route['rule']);
+
+            $results = [];
+            foreach ($tokens as $index => $rawValue) {
+                $value = str_replace(['{', '}'], '', $rawValue);
+
+                // Save defaults
+                if (array_key_exists('defaults', $options) && array_key_exists($value, $options['defaults'])) {
+                    $results[$rawValue] = $options['defaults'][$value];
+                } elseif (array_key_exists($value, $params)) {
+                    $results[$rawValue] = $params[$value];
+                } else {
+                    throw new \RuntimeException(sprintf(
+                        "No '%s' parameter passed to the url generation for '%s'",
+                        $value,
+                        $name
+                    ));
+                }
+            }
+
+            return str_replace(array_keys($results), array_values($results), $route['rule']);
+        }
+    }
+
     /**
      * Build a regular expression from the given rule.
      *
@@ -129,6 +158,7 @@ class Router implements RouterInterface
     {
         $tokens = [];
         preg_match_all('@\{([\w]+)\}@', $rule, $tokens, PREG_PATTERN_ORDER);
+
         return $tokens[0];
     }
 
