@@ -99,4 +99,47 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('foo_string', $payload['_route']);
         $this->assertEquals('foo', $payload['id']);
     }
+
+    public function testCanGenerateSimpleUrl()
+    {
+        $router = new Router();
+
+        $router->attach('foo', '/foo/bar', 'SimpleController::indexAction');
+        $url = $router->gentUrl('foo');
+
+        $this->assertEquals('/foo/bar', $url);
+    }
+
+    public function testCanGenerateUrlWithSimpleToken()
+    {
+        $router = new Router();
+
+        $router->attach('foo', '/foo/{id}', 'SimpleController::indexAction');
+        $url = $router->gentUrl('foo', ['id' => 14]);
+
+        $this->assertEquals('/foo/14', $url);
+    }
+
+    public function testCanGenerateUrlWithDefaultToken()
+    {
+        $router = new Router();
+
+        $router->attach('foo', '/foo/{id}/{some_default}', 'SimpleController::indexAction', [
+            'defaults' => ['some_default' => 'some-value']]
+        );
+        $url = $router->gentUrl('foo', ['id' => 14]);
+
+        $this->assertEquals('/foo/14/some-value', $url);
+    }
+
+    /**
+     * @expectedException RuntimeException
+     */
+    public function testThrowsWhenNotEnoughParamsPassedToUrl()
+    {
+        $router = new Router();
+
+        $router->attach('foo', '/foo/{id}', 'SimpleController::indexAction');
+        $router->gentUrl('foo');
+    }
 }
