@@ -53,6 +53,24 @@ class Router implements RouterInterface
     }
 
     /**
+     * Mount a collection of routes at a specific prefix
+     *
+     * @param       $prefix
+     * @param array $routes
+     */
+    public function mount($prefix, array $routes = [])
+    {
+        foreach ($routes as list($name, $rule, $action, $options))
+        {
+            if (!is_array($options)) {
+                $options = [];
+            }
+
+            $this->attach($name, $prefix . $rule, $action, $options);
+        }
+    }
+
+    /**
      * Attempt to resolve a route from a URL
      *
      * @param Request $request

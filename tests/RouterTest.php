@@ -142,4 +142,46 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $router->attach('foo', '/foo/{id}', 'SimpleController::indexAction');
         $router->gentUrl('foo');
     }
+
+    public function testCanMountSimple()
+    {
+        $request = $this->prophesize(Request::class);
+        $request->getUri()
+                ->shouldBeCalledTimes(3)
+                ->willReturn('/foo/car');
+
+        $router = new Router();
+
+        $router->mount('/foo', [
+            ['a', '/aar', 'SimpleController::aarAction'],
+            ['b', '/bar', 'SimpleController::barAction'],
+            ['c', '/car', 'SimpleController::carAction'],
+        ]);
+
+        $payload = $router->resolve($request->reveal());
+
+        $this->assertEquals('SimpleController', $payload['_controller']);
+        $this->assertEquals('carAction', $payload['_method']);
+    }
+
+    public function testCanMountMoreComplex()
+    {
+        $request = $this->prophesize(Request::class);
+        $request->getUri()
+                ->shouldBeCalledTimes(2)
+                ->willReturn('/foo/bar/bob');
+
+        $router = new Router();
+
+        $router->mount('/foo', [
+            ['a', '/bar/{id}', 'SimpleController::barAction', ['filters' => ['id' => '{int}']]],
+            ['b', '/bar/{id}', 'SimpleController::barAction'],
+        ]);
+
+        $payload = $router->resolve($request->reveal());
+
+        $this->assertEquals('SimpleController', $payload['_controller']);
+        $this->assertEquals('barAction', $payload['_method']);
+        $this->assertEquals('b', $payload['_route']);
+    }
 }
