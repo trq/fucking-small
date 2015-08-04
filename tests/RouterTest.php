@@ -46,6 +46,25 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(14, $payload['id']);
     }
 
+    public function testRouteMatchingWithOptional()
+    {
+        $request = $this->prophesize(Request::class);
+        $request->getUri()
+                ->shouldBeCalledTimes(1)
+                ->willReturn('/foo');
+
+        $router = new Router();
+
+        $router->attach('/foo/{id}', 'SimpleController::indexAction', ['defaults' => ['id' => 14]]);
+
+        $payload = $router->resolve($request->reveal());
+
+        $this->assertEquals('SimpleController', $payload['_controller']);
+        $this->assertEquals('indexAction', $payload['_method']);
+        $this->assertEquals('/foo/{id}', $payload['_route']);
+        $this->assertEquals(14, $payload['id']);
+    }
+
     public function testRouteMatchingIntFilter()
     {
         $request = $this->prophesize(Request::class);

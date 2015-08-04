@@ -63,10 +63,11 @@ class Router implements RouterInterface
     public function resolve(Request $request)
     {
         foreach ($this->routes as $rule => $action) {
-            $regex   = $this->compileRegex($rule);
+            $options = $this->options[$rule];
+            $regex   = $this->compileRegex($rule, $options);
             $tokens  = $this->compileTokens($rule);
 
-            $results = $this->compileResults($regex, $tokens, $request->getUri());
+            $results = $this->compileResults($regex, $tokens, $request->getUri(), $options);
 
             if ($results !== false) {
                 $payload = [];
@@ -88,25 +89,30 @@ class Router implements RouterInterface
      * Build a regular expression from the given rule.
      *
      * @param string $rule
+     * @param array $options
      *
      * @return string
      */
-    private function compileRegex($rule)
+    private function compileRegex($rule, array $options = [])
     {
-        $options = $this->options[$rule];
-
         $regex = '^' . preg_replace_callback(
             '@\{[\w]+\}@',
             function ($matches) use ($options) {
-                $key = str_replace(['{', '}'], '', $matches[0]);
+                $optional = false;
+                $key      = str_replace(['{', '}'], '', $matches[0]);
+
+                if (array_key_exists('defaults', $options) && array_key_exists($key, $options['defaults'])) {
+                    $optional = true;
+                }
+
                 if (array_key_exists('filters', $options) && array_key_exists($key, $options['filters'])) {
                     if (array_key_exists($options['filters'][$key], $this->defaultFilters)) {
-                        return '(' . $this->defaultFilters[$options['filters'][$key]] . ')';
+                        return  ($optional ? '?' : '') . '(' . $this->defaultFilters[$options['filters'][$key]] . ')' . ($optional ? '?' : '');
                     } else {
-                        return '(' . $options['filters'][$key] . ')';
+                        return ($optional ? '?' : '') . '(' . $options['filters'][$key] . ')' . ($optional ? '?' : '');
                     }
                 } else {
-                    return '(' . $this->defaultFilters['{default}'] . ')';
+                    return ($optional ? '?' : '') . '(' . $this->defaultFilters['{default}'] . ')' . ($optional ? '?' : '');
                 }
             },
             $rule
@@ -132,12 +138,13 @@ class Router implements RouterInterface
      * by the values of the given tokens.
      *
      * @param string $regex
-     * @param array $tokens
+     * @param array  $tokens
      * @param string $haystack
+     * @param array  $options
      *
      * @return array|false
      */
-    private function compileResults($regex, $tokens, $haystack)
+    private function compileResults($regex, $tokens, $haystack, array $options = [])
     {
         $results = [];
 
@@ -145,10 +152,22 @@ class Router implements RouterInterface
         if (preg_match('@' . $regex . '@', $haystack, $values)) {
             // Discard *all* matches index.
             array_shift($values);
-            // Match tokens to values found by the regex.
+
+            // Match tokens to values.
             foreach ($tokens as $index => $value) {
-                if (isset($values[$index])) {
-                    $results[str_replace(['{', '}'], '', $value)] = urldecode($values[$index]);
+                $value = str_replace(['{', '}'], '', $value);
+
+                // Save defaults
+                if (array_key_exists('defaults', $options)) {
+                    $defaults = $options['defaults'];
+                    if (array_key_exists($value, $defaults)) {
+                        $results[$value] = $defaults[$value];
+                    }
+                }
+
+                // Save parsed values, overriding defaults if necessary
+                if (array_key_exists($index, $values)) {
+                    $results[$value] = $values[$index];
                 }
             }
 
