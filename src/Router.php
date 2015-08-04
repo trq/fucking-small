@@ -17,11 +17,6 @@ class Router implements RouterInterface
     /**
      * @var array
      */
-    private $options = [];
-
-    /**
-     * @var array
-     */
     private $defaultFilters = [];
 
     /**
@@ -39,16 +34,20 @@ class Router implements RouterInterface
     }
 
     /**
+     * @param string $name
      * @param string $rule
      * @param string $action
      * @param array  $options
      *
      * @return $this
      */
-    public function attach($rule, $action, array $options = [])
+    public function attach($name, $rule, $action, array $options = [])
     {
-        $this->routes[$rule] = $action;
-        $this->options[$rule] = $options;
+        $this->routes[$name] = [
+            'rule'    => $rule,
+            'action'  => $action,
+            'options' => $options
+        ];
 
         return $this;
     }
@@ -62,19 +61,19 @@ class Router implements RouterInterface
      */
     public function resolve(Request $request)
     {
-        foreach ($this->routes as $rule => $action) {
-            $options = $this->options[$rule];
-            $regex   = $this->compileRegex($rule, $options);
-            $tokens  = $this->compileTokens($rule);
+        foreach ($this->routes as $name => $route) {
+            $options = $route['options'];
+            $regex   = $this->compileRegex($route['rule'], $options);
+            $tokens  = $this->compileTokens($route['rule']);
 
             $results = $this->compileResults($regex, $tokens, $request->getUri(), $options);
 
             if ($results !== false) {
                 $payload = [];
-                list($controller, $method) = explode('::', $action);
+                list($controller, $method) = explode('::', $route['action']);
                 $payload['_controller']    = $controller;
                 $payload['_method']        = $method;
-                $payload['_route']         = $rule;
+                $payload['_route']         = $name;
 
                 $payload = array_merge($results, $payload);
 

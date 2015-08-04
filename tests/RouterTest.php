@@ -16,15 +16,14 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 
         $router = new Router();
 
-        $router->attach('/foo', 'SimpleController::indexAction');
-        $router->attach('/bar', 'SimpleController::indexAction');
-        $router->attach('/bob', 'SimpleController::indexAction');
+        $router->attach('foo', '/foo', 'SimpleController::indexAction');
+        $router->attach('bar', '/bar', 'SimpleController::indexAction');
+        $router->attach('bob', '/bob', 'SimpleController::indexAction');
 
         $payload = $router->resolve($request->reveal());
 
         $this->assertEquals('SimpleController', $payload['_controller']);
         $this->assertEquals('indexAction', $payload['_method']);
-        $this->assertEquals('/bob', $payload['_route']);
     }
 
     public function testRouteMatchingWithTokens()
@@ -36,13 +35,12 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 
         $router = new Router();
 
-        $router->attach('/foo/{id}', 'SimpleController::indexAction');
+        $router->attach('foo', '/foo/{id}', 'SimpleController::indexAction');
 
         $payload = $router->resolve($request->reveal());
 
         $this->assertEquals('SimpleController', $payload['_controller']);
         $this->assertEquals('indexAction', $payload['_method']);
-        $this->assertEquals('/foo/{id}', $payload['_route']);
         $this->assertEquals(14, $payload['id']);
     }
 
@@ -55,13 +53,12 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 
         $router = new Router();
 
-        $router->attach('/foo/{id}', 'SimpleController::indexAction', ['defaults' => ['id' => 14]]);
+        $router->attach('foo', '/foo/{id}', 'SimpleController::indexAction', ['defaults' => ['id' => 14]]);
 
         $payload = $router->resolve($request->reveal());
 
         $this->assertEquals('SimpleController', $payload['_controller']);
         $this->assertEquals('indexAction', $payload['_method']);
-        $this->assertEquals('/foo/{id}', $payload['_route']);
         $this->assertEquals(14, $payload['id']);
     }
 
@@ -74,13 +71,12 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 
         $router = new Router();
 
-        $router->attach('/foo/{id}', 'SimpleController::indexAction', ['filters' => ['id' => '{int}']]);
+        $router->attach('foo', '/foo/{id}', 'SimpleController::indexAction', ['filters' => ['id' => '{int}']]);
 
         $payload = $router->resolve($request->reveal());
 
         $this->assertEquals('SimpleController', $payload['_controller']);
         $this->assertEquals('indexAction', $payload['_method']);
-        $this->assertEquals('/foo/{id}', $payload['_route']);
         $this->assertEquals(14, $payload['id']);
     }
 
@@ -88,15 +84,19 @@ class RouterTest extends \PHPUnit_Framework_TestCase
     {
         $request = $this->prophesize(Request::class);
         $request->getUri()
-                ->shouldBeCalledTimes(1)
+                ->shouldBeCalledTimes(2)
                 ->willReturn('/foo/foo');
 
         $router = new Router();
 
-        $router->attach('/foo/{id}', 'SimpleController::indexAction', ['filters' => ['id' => '{int}']]);
+        $router->attach('foo_int', '/foo/{id}', 'SimpleController::indexAction', ['filters' => ['id' => '{int}']]);
+        $router->attach('foo_string', '/foo/{id}', 'SimpleController::indexAction');
 
         $payload = $router->resolve($request->reveal());
 
-        $this->assertFalse($payload);
+        $this->assertEquals('SimpleController', $payload['_controller']);
+        $this->assertEquals('indexAction', $payload['_method']);
+        $this->assertEquals('foo_string', $payload['_route']);
+        $this->assertEquals('foo', $payload['id']);
     }
 }
