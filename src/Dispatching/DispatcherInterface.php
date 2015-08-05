@@ -1,6 +1,8 @@
 <?php
 
-namespace FuckingSmall;
+namespace FuckingSmall\Dispatching;
+
+use FuckingSmall\IoC\ContainerInterface;
 
 interface DispatcherInterface
 {

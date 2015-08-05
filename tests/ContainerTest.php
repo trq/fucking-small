@@ -2,7 +2,7 @@
 
 namespace FuckingSmallTest;
 
-use FuckingSmall\Container;
+use FuckingSmall\IoC\Container;
 use FuckingSmallTest\Fixture\SimpleService;
 use FuckingSmallTest\Fixture\SimpleServiceInterface;
 use FuckingSmallTest\Fixture\ComplexService;

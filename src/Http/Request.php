@@ -1,12 +1,7 @@
 <?php
 
-namespace FuckingSmall;
+namespace FuckingSmall\Http;
 
-/**
- * A very simple HTTP abstraction
- *
- * @package FuckingSmall
- */
 /**
  * Class Request
  * @package FuckingSmall

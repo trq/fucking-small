@@ -1,6 +1,6 @@
 <?php
 
-namespace FuckingSmall;
+namespace FuckingSmall\IoC;
 
 /**
  * An extremely simple IoC container implementation

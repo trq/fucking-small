@@ -2,8 +2,8 @@
 
 namespace FuckingSmallTest;
 
-use FuckingSmall\Container;
-use FuckingSmall\Dispatcher;
+use FuckingSmall\IoC\Container;
+use FuckingSmall\Dispatching\Dispatcher;
 use FuckingSmallTest\Fixture\TestController;
 
 class DispatcherTest extends \PHPUnit_Framework_TestCase

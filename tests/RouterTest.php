@@ -2,8 +2,8 @@
 
 namespace FuckingSmallTest;
 
-use FuckingSmall\Router;
-use FuckingSmall\Request;
+use FuckingSmall\Dispatching\Router;
+use FuckingSmall\Http\Request;
 
 class RouterTest extends \PHPUnit_Framework_TestCase
 {

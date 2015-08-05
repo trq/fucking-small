@@ -1,11 +1,14 @@
 <?php
 
-namespace FuckingSmall;
+namespace FrameworkModule;
 
-class AbstractController
+use FuckingSmall\Http\Response;
+use FuckingSmall\Http\ResponseInterface;
+
+class BaseController
 {
     /**
-     * @var
+     * @var string
      */
     private $appPath;
 
@@ -15,12 +18,12 @@ class AbstractController
     private $response;
 
     /**
-     * @param string            $_appPath
+     * @param string            $appPath
      * @param ResponseInterface $response
      */
-    public function __construct($_appPath, ResponseInterface $response)
+    public function __construct($appPath, ResponseInterface $response)
     {
-        $this->appPath  = $_appPath;
+        $this->appPath  = $appPath;
         $this->response = $response;
     }
 
@@ -32,7 +35,12 @@ class AbstractController
      */
     protected function render($name, array $vars = [])
     {
-        $path = $this->appPath . '/view/' . $name . '.php';
+        list($module, $name) = explode(':', $name);
+
+        /**
+         * TODO: The module path needs to be resolved some other way. Relying on the appPath is shite.
+         */
+        $path = $this->appPath . '/src/' . $module . '/view/' . $name . '.php';
 
         if (file_exists($path)) {
             extract($vars);

@@ -1,6 +1,8 @@
 <?php
 
-namespace FuckingSmall;
+namespace FuckingSmall\Dispatching;
+
+use FuckingSmall\Http\Request;
 
 interface RouterInterface
 {
@@ -16,10 +18,13 @@ interface RouterInterface
 
     /**
      * Attempt to resolve a route from a URL
-     *
-     * @param Request $request
-     *
-     * @return array|false
+
+*
+*@param \FuckingSmall\Http\Request $request
+
+      
+*
+*@return array|false
      */
     public function resolve(Request $request);
 }

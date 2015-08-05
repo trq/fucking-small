@@ -1,6 +1,6 @@
 <?php
 
-namespace FuckingSmall;
+namespace FuckingSmall\Http;
 
 class Response implements ResponseInterface
 {
