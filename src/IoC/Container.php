@@ -51,7 +51,7 @@ class Container implements ContainerInterface
         $this->aliases[$alias] = $concrete;
 
         if (null !== $callback) {
-            $this->services[$concrete] = $callback;
+            $this->attach($concrete, $callback);
         }
 
         return $this;
