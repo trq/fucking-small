@@ -6,6 +6,8 @@ use FuckingSmall\IoC\Container;
 use FuckingSmallTest\Fixture\SimpleService;
 use FuckingSmallTest\Fixture\SimpleServiceInterface;
 use FuckingSmallTest\Fixture\ComplexService;
+use FuckingSmallTest\Fixture\ParentService;
+use FuckingSmallTest\Fixture\ChildService;
 
 class ContainerTest extends \PHPUnit_Framework_TestCase
 {
@@ -96,5 +98,16 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
 
         $this->assertInstanceOf(\StdClass::class, $foo);
         $this->assertInstanceOf(\StdClass::class, $bar);
+    }
+
+    public function testCanResolveParamsFromTemplate()
+    {
+        $container = new Container();
+
+        $container->template(ParentService::class, ['foo' => 'bar']);
+
+        $child = $container->resolve(ChildService::class);
+
+        $this->assertEquals('bar', $child->getFoo());
     }
 }
