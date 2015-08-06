@@ -19,6 +19,8 @@ class Container implements ContainerInterface
      */
     protected $aliases = [];
 
+    protected $attributes = [];
+
     /**
      * @var array
      */
@@ -29,12 +31,14 @@ class Container implements ContainerInterface
      *
      * @param          $name
      * @param callable $callback
+     * @param array    $attributes
      *
      * @return $this
      */
-    public function attach($name, callable $callback)
+    public function attach($name, callable $callback, array $attributes = [])
     {
-        $this->services[$name] = $callback;
+        $this->services[$name]   = $callback;
+        $this->attributes[$name] = $attributes;
 
         return $this;
     }
@@ -43,15 +47,16 @@ class Container implements ContainerInterface
      * @param string   $alias
      * @param string   $concrete
      * @param callable $callback
+     * @param array    $attributes
      *
      * @return $this
      */
-    public function alias($alias, $concrete, callable $callback = null)
+    public function alias($alias, $concrete, callable $callback = null, array $attributes = [])
     {
         $this->aliases[$alias] = $concrete;
 
         if (null !== $callback) {
-            $this->attach($concrete, $callback);
+            $this->attach($concrete, $callback, $attributes);
         }
 
         return $this;
@@ -90,6 +95,26 @@ class Container implements ContainerInterface
                 return $this->autoResolveAlias($name);
             }
         }
+    }
+
+    /**
+     * @param $attribute
+     * @param $key
+     *
+     * @return array
+     */
+    public function findByAttribute($attribute, $key)
+    {
+        $services = [];
+        foreach ($this->attributes as $serviceIdentifier => $serviceAttributes) {
+            if (array_key_exists($attribute, $serviceAttributes)) {
+                if (in_array($key, $serviceAttributes[$attribute])) {
+                    $services[] = $serviceIdentifier;
+                }
+            }
+        }
+
+        return $services;
     }
 
     /**
@@ -160,7 +185,7 @@ class Container implements ContainerInterface
      *
      * @return object
      */
-    protected function autoResolveAlias($name)
+    private function autoResolveAlias($name)
     {
         if (array_key_exists($name, $this->aliases)) {
             return $this->autoResolve($this->aliases[$name]);

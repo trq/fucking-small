@@ -110,4 +110,17 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals('bar', $child->getFoo());
     }
+
+    public function testCanFindTaggedServices()
+    {
+        $container = new Container();
+
+        $container->attach('foo', function() {}, ['tags' => ['foo']]);
+        $container->attach('bar', function() {}, ['tags' => ['foo']]);
+        $container->attach('bob', function() {}, ['tags' => ['foo']]);
+
+        $services = $container->findByAttribute('tags', 'foo');
+
+        $this->assertCount(3, $services);
+    }
 }
