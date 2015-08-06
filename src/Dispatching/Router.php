@@ -62,11 +62,12 @@ class Router implements RouterInterface
      */
     public function mount($prefix, array $routes = [])
     {
-        foreach ($routes as list($name, $rule, $action, $options))
+        foreach ($routes as $route)
         {
-            if (!is_array($options)) {
-                $options = [];
-            }
+            $name    = $route[0];
+            $rule    = $route[1];
+            $action  = $route[2];
+            $options = isset($route[3]) ? $route[3] : [];
 
             $this->attach($name, $prefix . $rule, $action, $options);
         }
