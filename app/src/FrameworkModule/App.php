@@ -13,11 +13,6 @@ use FuckingSmall\IoC\ContainerInterface;
 class App
 {
     /**
-     * @var string
-     */
-    private $appPath;
-
-    /**
      * @var ContainerInterface
      */
     private $container;
@@ -37,7 +32,7 @@ class App
         }
 
         $this->container = $container;
-        $this->container->setParameter('appPath', $appPath);
+        $this->container->template(BaseController::class, ['appPath' => $appPath]);
     }
 
     /**

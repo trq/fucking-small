@@ -22,7 +22,7 @@ class Container implements ContainerInterface
     /**
      * @var array
      */
-    protected $parameters = [];
+    protected $templates = [];
 
     /**
      * Attach a service to the container
@@ -58,16 +58,12 @@ class Container implements ContainerInterface
     }
 
     /**
-     * @param string $index
-     * @param mixed $value
-     *
-     * @return $this
+     * @param       $template
+     * @param array $parameters
      */
-    public function setParameter($index, $value)
+    public function template($template, array $parameters)
     {
-        $this->parameters[$index] = $value;
-
-        return $this;
+        $this->templates[$template] = $parameters;
     }
 
     /**
@@ -97,22 +93,39 @@ class Container implements ContainerInterface
     }
 
     /**
-     * A simple helper to resolve dependencies given an array of dependents.
+     * A simple helper to resolve dependencies.
      *
-     * @param array $params
+     * @param \ReflectionClass $class
+     * @param $parameters
      *
      * @return array
      */
-    private function getDependencies($params)
+    private function getDependencies($class, $parameters)
     {
+        $defaults = [];
+        if ($parent = $class->getParentClass()) {
+            if (array_key_exists($parent->name, $this->templates)) {
+                $defaults = $this->templates[$parent->name];
+            }
+        }
+
         $args = [];
-        foreach ($params as $param) {
-            if (array_key_exists($param->name, $this->parameters)) {
-                $args[] = $this->parameters[$param->name];
-            } elseif ($param->getClass() && $object = $this->resolve($param->getClass()->name)) {
+        foreach ($parameters as $parameter) {
+            /**
+             * Is the dependency available via a parent class template?
+             */
+            if (!empty($defaults) && array_key_exists($parameter->name, $defaults)) {
+                $args[] = $defaults[$parameter->name];
+            /**
+             * Is the dependency another object?
+             */
+            } elseif ($parameter->getClass() && $object = $this->resolve($parameter->getClass()->name)) {
                 $args[] = $object;
-            } elseif ($param->isDefaultValueAvailable()) {
-                $args[] = $param->getDefaultValue();
+            /**
+             * Do we have a default value?
+             */
+            } elseif ($parameter->isDefaultValueAvailable()) {
+                $args[] = $parameter->getDefaultValue();
             }
         }
 
@@ -127,15 +140,15 @@ class Container implements ContainerInterface
     private function autoResolve($name)
     {
         $object = null;
-        $reflection = new \ReflectionClass($name);
+        $class  = new \ReflectionClass($name);
 
-        if ($reflection->isInstantiable()) {
-            $construct = $reflection->getConstructor();
+        if ($class->isInstantiable()) {
+            $construct = $class->getConstructor();
             if ($construct === null) {
                 $object = new $name;
             } else {
-                $dependencies = $this->getDependencies($construct->getParameters());
-                $object       = $reflection->newInstanceArgs($dependencies);
+                $dependencies = $this->getDependencies($class, $construct->getParameters());
+                $object       = $class->newInstanceArgs($dependencies);
             }
         }
 
