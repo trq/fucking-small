@@ -118,6 +118,44 @@ class Container implements ContainerInterface
     }
 
     /**
+     * @param $serviceIdentifier
+     * @param $attribute
+     *
+     * @return bool
+     */
+    public function hasAttribute($serviceIdentifier, $attribute)
+    {
+        return array_key_exists($attribute, $this->attributes[$serviceIdentifier]);
+    }
+
+    /**
+     * @param $serviceIdentifier
+     * @param $attribute
+     *
+     * @return mixed
+     */
+    public function getAttribute($serviceIdentifier, $attribute)
+    {
+        if ($this->hasAttribute($serviceIdentifier, $attribute)) {
+            return $this->attributes[$serviceIdentifier][$attribute];
+        }
+    }
+
+    /**
+     * @param $serviceIdentifier
+     * @param $attribute
+     * @param $value
+     *
+     * @return mixed
+     */
+    public function setAttribute($serviceIdentifier, $attribute, $value)
+    {
+        if ($this->hasAttribute($serviceIdentifier, $attribute)) {
+            return $this->attributes[$serviceIdentifier][$attribute] = $value;
+        }
+    }
+
+    /**
      * A simple helper to resolve dependencies.
      *
      * @param \ReflectionClass $class

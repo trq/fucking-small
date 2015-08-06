@@ -111,7 +111,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('bar', $child->getFoo());
     }
 
-    public function testCanFindTaggedServices()
+    public function testCanFindServicesByAttributes()
     {
         $container = new Container();
 
@@ -122,5 +122,24 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
         $services = $container->findByAttribute('tags', 'foo');
 
         $this->assertCount(3, $services);
+    }
+
+    public function testCanEditServiceAttributes()
+    {
+        $container = new Container();
+
+        $container->attach('foo', function() {}, ['tags' => ['foo']]);
+
+        $tags = $container->getAttribute('foo', 'tags');
+
+        $this->assertEquals(['foo'], $tags);
+
+        $tags[] = 'bar';
+
+        $container->setAttribute('foo', 'tags', $tags);
+
+        $tags = $container->getAttribute('foo', 'tags');
+
+        $this->assertEquals(['foo', 'bar'], $tags);
     }
 }
