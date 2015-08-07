@@ -19,6 +19,8 @@ class Container implements ContainerInterface
      */
     protected $aliases = [];
 
+    protected $attributes = [];
+
     /**
      * @var array
      */
@@ -29,12 +31,14 @@ class Container implements ContainerInterface
      *
      * @param          $name
      * @param callable $callback
+     * @param array    $attributes
      *
      * @return $this
      */
-    public function attach($name, callable $callback)
+    public function attach($name, callable $callback, array $attributes = [])
     {
-        $this->services[$name] = $callback;
+        $this->services[$name]   = $callback;
+        $this->attributes[$name] = $attributes;
 
         return $this;
     }
@@ -43,15 +47,16 @@ class Container implements ContainerInterface
      * @param string   $alias
      * @param string   $concrete
      * @param callable $callback
+     * @param array    $attributes
      *
      * @return $this
      */
-    public function alias($alias, $concrete, callable $callback = null)
+    public function alias($alias, $concrete, callable $callback = null, array $attributes = [])
     {
         $this->aliases[$alias] = $concrete;
 
         if (null !== $callback) {
-            $this->services[$concrete] = $callback;
+            $this->attach($concrete, $callback, $attributes);
         }
 
         return $this;
@@ -75,21 +80,110 @@ class Container implements ContainerInterface
      */
     public function resolve($name)
     {
+        $object = null;
+
         if (array_key_exists($name, $this->services)) {
-            return call_user_func($this->services[$name]);
+            $object = call_user_func($this->services[$name]);
         } else if (array_key_exists($name, $this->aliases) && array_key_exists($this->aliases[$name], $this->services)) {
-            return call_user_func($this->services[$this->aliases[$name]]);
+            $object = call_user_func($this->services[$this->aliases[$name]]);
         } else {
             try {
                 if ($result = $this->autoResolve($name)) {
-                    return $result;
+                    $object = $result;
+                } else{
+                    $object = $this->autoResolveAlias($name);
                 }
-
-                return $this->autoResolveAlias($name);
             } catch (\ReflectionException $e) {
-                return $this->autoResolveAlias($name);
+                $object = $this->autoResolveAlias($name);
             }
         }
+
+        $object = $this->handleCallAttributes($name, $object);
+
+        return $object;
+    }
+
+    /**
+     * @param $attribute
+     * @param $key
+     *
+     * @return array
+     */
+    public function findByAttribute($attribute, $key)
+    {
+        $services = [];
+        foreach ($this->attributes as $serviceIdentifier => $serviceAttributes) {
+            if (array_key_exists($attribute, $serviceAttributes)) {
+                if (in_array($key, $serviceAttributes[$attribute])) {
+                    $services[] = $serviceIdentifier;
+                }
+            }
+        }
+
+        return $services;
+    }
+
+    /**
+     * @param $serviceIdentifier
+     * @param $attribute
+     *
+     * @return bool
+     */
+    public function hasAttribute($serviceIdentifier, $attribute)
+    {
+        if (array_key_exists($serviceIdentifier, $this->attributes)) {
+            return array_key_exists($attribute, $this->attributes[$serviceIdentifier]);
+        }
+
+        return false;
+    }
+
+    /**
+     * @param $serviceIdentifier
+     * @param $attribute
+     *
+     * @return mixed
+     */
+    public function getAttribute($serviceIdentifier, $attribute)
+    {
+        if ($this->hasAttribute($serviceIdentifier, $attribute)) {
+            return $this->attributes[$serviceIdentifier][$attribute];
+        }
+    }
+
+    /**
+     * @param $serviceIdentifier
+     * @param $attribute
+     * @param $value
+     *
+     * @return mixed
+     */
+    public function setAttribute($serviceIdentifier, $attribute, $value)
+    {
+        if ($this->hasAttribute($serviceIdentifier, $attribute)) {
+            return $this->attributes[$serviceIdentifier][$attribute] = $value;
+        }
+    }
+
+    /**
+     * @param $serviceIdentifier
+     * @param $object
+     */
+    private function handleCallAttributes($serviceIdentifier, $object)
+    {
+        if ($this->hasAttribute($serviceIdentifier, 'calls')) {
+            foreach ($this->getAttribute($serviceIdentifier, 'calls') as $method => $calls) {
+                if (is_array($calls)) {
+                    foreach ($calls as $call) {
+                        call_user_func_array([$object, $method], $call);
+                    }
+                } else {
+                    call_user_func([$object, $calls]);
+                }
+            }
+        }
+
+        return $object;
     }
 
     /**
@@ -160,7 +254,7 @@ class Container implements ContainerInterface
      *
      * @return object
      */
-    protected function autoResolveAlias($name)
+    private function autoResolveAlias($name)
     {
         if (array_key_exists($name, $this->aliases)) {
             return $this->autoResolve($this->aliases[$name]);
