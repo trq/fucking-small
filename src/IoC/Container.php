@@ -80,21 +80,27 @@ class Container implements ContainerInterface
      */
     public function resolve($name)
     {
+        $object = null;
+
         if (array_key_exists($name, $this->services)) {
-            return call_user_func($this->services[$name]);
+            $object = call_user_func($this->services[$name]);
         } else if (array_key_exists($name, $this->aliases) && array_key_exists($this->aliases[$name], $this->services)) {
-            return call_user_func($this->services[$this->aliases[$name]]);
+            $object = call_user_func($this->services[$this->aliases[$name]]);
         } else {
             try {
                 if ($result = $this->autoResolve($name)) {
-                    return $result;
+                    $object = $result;
+                } else{
+                    $object = $this->autoResolveAlias($name);
                 }
-
-                return $this->autoResolveAlias($name);
             } catch (\ReflectionException $e) {
-                return $this->autoResolveAlias($name);
+                $object = $this->autoResolveAlias($name);
             }
         }
+
+        $object = $this->handleCallAttributes($name, $object);
+
+        return $object;
     }
 
     /**
@@ -125,7 +131,11 @@ class Container implements ContainerInterface
      */
     public function hasAttribute($serviceIdentifier, $attribute)
     {
-        return array_key_exists($attribute, $this->attributes[$serviceIdentifier]);
+        if (array_key_exists($serviceIdentifier, $this->attributes)) {
+            return array_key_exists($attribute, $this->attributes[$serviceIdentifier]);
+        }
+
+        return false;
     }
 
     /**
@@ -153,6 +163,27 @@ class Container implements ContainerInterface
         if ($this->hasAttribute($serviceIdentifier, $attribute)) {
             return $this->attributes[$serviceIdentifier][$attribute] = $value;
         }
+    }
+
+    /**
+     * @param $serviceIdentifier
+     * @param $object
+     */
+    private function handleCallAttributes($serviceIdentifier, $object)
+    {
+        if ($this->hasAttribute($serviceIdentifier, 'calls')) {
+            foreach ($this->getAttribute($serviceIdentifier, 'calls') as $method => $calls) {
+                if (is_array($calls)) {
+                    foreach ($calls as $call) {
+                        call_user_func_array([$object, $method], $call);
+                    }
+                } else {
+                    call_user_func([$object, $calls]);
+                }
+            }
+        }
+
+        return $object;
     }
 
     /**

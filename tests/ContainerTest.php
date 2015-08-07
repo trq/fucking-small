@@ -8,6 +8,7 @@ use FuckingSmallTest\Fixture\SimpleServiceInterface;
 use FuckingSmallTest\Fixture\ComplexService;
 use FuckingSmallTest\Fixture\ParentService;
 use FuckingSmallTest\Fixture\ChildService;
+use FuckingSmallTest\Fixture\ServiceWithCall;
 
 class ContainerTest extends \PHPUnit_Framework_TestCase
 {
@@ -141,5 +142,44 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
         $tags = $container->getAttribute('foo', 'tags');
 
         $this->assertEquals(['foo', 'bar'], $tags);
+    }
+
+    public function testCallAttributeWithSingleArgument()
+    {
+        $container = new Container();
+
+        $container->attach(ServiceWithCall::class, function() {
+            return new ServiceWithCall();
+        }, ['calls' => ['setSomething' => [['what']]]]);
+
+        $service = $container->resolve(ServiceWithCall::class);
+
+        $this->assertEquals('what', $service->getSomething());
+    }
+
+    public function testCallAttributeWithMultipleArguments()
+    {
+        $container = new Container();
+
+        $container->attach(ServiceWithCall::class, function() {
+            return new ServiceWithCall();
+        }, ['calls' => ['setSomethingElse' => [['what', 'the']]]]);
+
+        $service = $container->resolve(ServiceWithCall::class);
+
+        $this->assertEquals('whatthe', $service->getSomethingElse());
+    }
+
+    public function testCallAttributeWithNoArguments()
+    {
+        $container = new Container();
+
+        $container->attach(ServiceWithCall::class, function() {
+            return new ServiceWithCall();
+        }, ['calls' => ['set']]);
+
+        $service = $container->resolve(ServiceWithCall::class);
+
+        $this->assertEquals('has been set', $service->get());
     }
 }
