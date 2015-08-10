@@ -160,9 +160,7 @@ class Container implements ContainerInterface
      */
     public function setAttribute($serviceIdentifier, $attribute, $value)
     {
-        if ($this->hasAttribute($serviceIdentifier, $attribute)) {
-            return $this->attributes[$serviceIdentifier][$attribute] = $value;
-        }
+        return $this->attributes[$serviceIdentifier][$attribute] = $value;
     }
 
     /**
@@ -174,8 +172,20 @@ class Container implements ContainerInterface
         if ($this->hasAttribute($serviceIdentifier, 'calls')) {
             foreach ($this->getAttribute($serviceIdentifier, 'calls') as $method => $calls) {
                 if (is_array($calls)) {
-                    foreach ($calls as $call) {
-                        call_user_func_array([$object, $method], $call);
+                    foreach ($calls as $arguments) {
+                        if (is_array($arguments)) {
+
+                            // See if we have any references
+                            for($i =0; $i <= count($arguments); $i++) {
+                                if ($arguments[$i] instanceof Reference) {
+                                    $arguments[$i] = $this->resolve($arguments[$i]->getServiceIdentifier());
+                                }
+                            }
+
+                            call_user_func_array([$object, $method], $arguments);
+                        } else {
+                            call_user_func([$object, $calls]);
+                        }
                     }
                 } else {
                     call_user_func([$object, $calls]);
