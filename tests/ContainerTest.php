@@ -3,12 +3,14 @@
 namespace FuckingSmallTest;
 
 use FuckingSmall\IoC\Container;
+use FuckingSmall\IoC\Reference;
 use FuckingSmallTest\Fixture\SimpleService;
 use FuckingSmallTest\Fixture\SimpleServiceInterface;
 use FuckingSmallTest\Fixture\ComplexService;
 use FuckingSmallTest\Fixture\ParentService;
 use FuckingSmallTest\Fixture\ChildService;
 use FuckingSmallTest\Fixture\ServiceWithCall;
+use FuckingSmallTest\Fixture\Manager;
 
 class ContainerTest extends \PHPUnit_Framework_TestCase
 {
@@ -181,5 +183,31 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
         $service = $container->resolve(ServiceWithCall::class);
 
         $this->assertEquals('has been set', $service->get());
+    }
+
+    public function testCanReferenceTaggedServices()
+    {
+        $container = new Container();
+
+        $container->attach('foo', function() { return new \StdClass(); }, ['tags' => ['foo']]);
+        $container->attach('bar', function() { return new \StdClass(); }, ['tags' => ['foo']]);
+        $container->attach('bob', function() { return new \StdClass(); }, ['tags' => ['foo']]);
+
+        $container->attach(Manager::class, function() {
+            return new Manager();
+        });
+
+        $services = $container->findByAttribute('tags', 'foo');
+
+        $calls = [];
+        foreach ($services as $service) {
+            $calls[] = [new Reference($service)];
+        }
+
+        $container->setAttribute(Manager::class, 'calls', ['addService' => $calls]);
+
+        $manager = $container->resolve(Manager::class);
+
+        $this->assertCount(3, $manager->getServices());
     }
 }
