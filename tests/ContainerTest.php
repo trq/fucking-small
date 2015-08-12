@@ -4,6 +4,7 @@ namespace FuckingSmallTest;
 
 use FuckingSmall\IoC\Container;
 use FuckingSmall\IoC\Reference;
+use FuckingSmall\IoC\TaggedReference;
 use FuckingSmallTest\Fixture\SimpleService;
 use FuckingSmallTest\Fixture\SimpleServiceInterface;
 use FuckingSmallTest\Fixture\ComplexService;
@@ -205,6 +206,23 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
         }
 
         $container->setAttribute(Manager::class, 'calls', ['addService' => $calls]);
+
+        $manager = $container->resolve(Manager::class);
+
+        $this->assertCount(3, $manager->getServices());
+    }
+
+    public function testCanUseTaggedReferenceServices()
+    {
+        $container = new Container();
+
+        $container->attach('foo', function() { return new \StdClass(); }, ['tags' => ['foo']]);
+        $container->attach('bar', function() { return new \StdClass(); }, ['tags' => ['foo']]);
+        $container->attach('bob', function() { return new \StdClass(); }, ['tags' => ['foo']]);
+
+        $container->attach(Manager::class, function() {
+            return new Manager();
+        }, ['calls' => ['AddService' => new TaggedReference('foo')]]);
 
         $manager = $container->resolve(Manager::class);
 

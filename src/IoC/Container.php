@@ -176,16 +176,22 @@ class Container implements ContainerInterface
                         if (is_array($arguments)) {
 
                             // See if we have any references
-                            for($i =0; $i <= count($arguments); $i++) {
+                            for ($i = 0; $i <= count($arguments); $i++) {
                                 if ($arguments[$i] instanceof Reference) {
                                     $arguments[$i] = $this->resolve($arguments[$i]->getServiceIdentifier());
                                 }
                             }
 
                             call_user_func_array([$object, $method], $arguments);
+
                         } else {
                             call_user_func([$object, $calls]);
                         }
+                    }
+                } elseif ($calls instanceof TaggedReference) {
+                    $services = $this->findByAttribute('tags', $calls->getTag());
+                    foreach ($services as $service) {
+                        call_user_func([$object, $method], $this->resolve($service));
                     }
                 } else {
                     call_user_func([$object, $calls]);
