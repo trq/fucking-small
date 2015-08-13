@@ -4,7 +4,7 @@ require __DIR__ . '/../vendor/autoload.php';
 
 use FrameworkModule\App;
 
-$requestPath = __DIR__ . '/web/' . $_SERVER['REQUEST_URI'];
+$requestPath = __DIR__ . '/web/' . parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);;
 
 /**
  * Serve static files, or content via the application
