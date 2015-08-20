@@ -176,7 +176,7 @@ class Container implements ContainerInterface
                         if (is_array($arguments)) {
 
                             // See if we have any references
-                            for ($i = 0; $i <= count($arguments); $i++) {
+                            for ($i = 0; $i < count($arguments); $i++) {
                                 if ($arguments[$i] instanceof Reference) {
                                     $arguments[$i] = $this->resolve($arguments[$i]->getServiceIdentifier());
                                 }
